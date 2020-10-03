@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title> JJR265 Homework 2</title>
+  <meta charset="utf-8" />
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://d3js.org/topojson.v2.min.js"></script>
+  <style>
+    .outline {
+      stroke: black;
+      stroke-width: 1px;
+      fill: none;
+    }
+
+    /* .zip {
+      fill: lightblue;
+    } */
+  </style>
+
+</head>
+
+<body>
+  <h1> Dogs in NYC </h1>
+  <select id="button"></select>
+  <svg id="map" width="700" height="700"></svg>
+  <svg id="table" width="200" height="700"></svg>
+  <svg id="legend" width="700" height="100"></svg>
+
+
+
+  <script>
+    const svg = d3.select("#map")
+    const width = svg.attr("width");
+    const height = svg.attr("height");
+    const margin = { top: 20, right: 20, left: 20, bottom: 20 };
+    const mapHeight = height - margin.top - margin.bottom;
+    const mapWidth = width - margin.left - margin.right;
+    const nyc_map = svg.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    const nametable = d3.select("#table");
+    const tableWidth = nametable.attr("width");
+    const tableHeight = nametable.attr("height");
+
+    const button = d3.select("#button")
+
+
+    const visualize = async () => {
+      var pet_data = await d3.csv("cleaned_pet_data.csv");
+      console.log(pet_data);
+
+      var breedtypes = d3.map(pet_data, function (d) { return (d.BreedName) }).keys().sort();
+
+      // credit to https://www.d3-graph-gallery.com/graph/line_filter.html
+      // for the idea of how to dynamically create button and filter data in graph
+      button.selectAll('myOptions')
+        .data(breedtypes)
+        .enter()
+        .append('option')
+        .text(function (d) { return d; }) // text showed in the menu
+        .attr("value", function (d) { return d; })
+
+
+      var nyc = await d3.json("nyc_zip_code_tabulation_areas_polygons.json");
+      console.log(nyc);
+
+      var zipCodes = topojson.feature(nyc, nyc.objects.nyc_zip_code_tabulation_areas_polygons);
+      var zipCodeMesh = topojson.mesh(nyc, nyc.objects.nyc_zip_code_tabulation_areas_polygons);
+
+      var project = d3.geoAlbersUsa().fitSize([mapWidth, mapHeight], zipCodes);
+      var path = d3.geoPath().projection(project);
+
+      nyc_map.selectAll("path.zips")
+        .data(zipCodes.features)
+        .join("path")
+        .attr("class", "zip")
+        .attr("d", path);
+
+      nyc_map.append("path")
+        .datum(zipCodeMesh)
+        .attr("class", "outline")
+        .attr("d", path);
+
+
+      // Now, create dictionaries to generate dog counts per zip code
+      let zipCounts = {};
+      console.log(zipCodes);
+
+      // let distinct3 = [(d => d.properties.postalcode)];
+      zipCodes.features.forEach(row => {
+        let key = row.properties.postalcode;
+        zipCounts[key] = 0;
+      })
+
+      pet_data.forEach(row => {
+        let key = row.ZipCode;
+        zipCounts[key] += 1;
+      });
+      console.log(zipCounts)
+
+      const dogMinMax = d3.extent(pet_data, d => zipCounts[d.ZipCode]);
+      console.log(dogMinMax);
+
+      const colorScale = d3.scaleSequential(d3.interpolateRdPu).domain(dogMinMax);
+
+      const colorScale2 = d3.scaleQuantile()
+        .domain(d3.values(zipCounts))
+        .range(['#ffb5ff', '#d399eb', '#a77ed7', '#7964c3', '#464caf']);
+      // .range(["#fff", "#d1e8ed", "#adc2da", "#8879b3", "#762b80"]);
+
+      nyc_map.selectAll(".zip")
+        .style("fill", d => colorScale2(zipCounts[d.properties.postalcode]));
+
+      const breedScale = d3.scaleOrdinal().domain(breedtypes).range(d3.schemeSet2);
+
+      // WRITE A FUNCTION TO UPDATE THE DATA IF BREED IS CHOSEN
+
+      // credit to https://www.d3-graph-gallery.com/graph/line_filter.html for 
+      // the idea on how to do this
+
+      function update_breed(breed) {
+
+        function same_breed(dog) {
+          return dog.BreedName == breed
+        }
+
+        let filtered_pet_data = pet_data.filter(same_breed);
+
+
+        let zipCounts2 = {};
+
+        console.log(filtered_pet_data);
+
+        zipCodes.features.forEach(row => {
+          let key = row.properties.postalcode;
+          zipCounts2[key] = 0;
+        });
+
+        filtered_pet_data.forEach(row => {
+          let key = row.ZipCode;
+          zipCounts2[key] += 1;
+        });
+        console.log(zipCounts2);
+
+        let dogMinMax2 = d3.extent(filtered_pet_data, d => zipCounts2[d.ZipCode]);
+        console.log(dogMinMax2);
+
+        let colorScale4 = d3.scaleSequential(d3.interpolateRdPu).domain(dogMinMax2);
+
+
+        nyc_map.selectAll(".zip")
+          .style("fill", d => colorScale4(zipCounts2[d.properties.postalcode]));
+        // } else {
+        // nyc_map.text("Not enought dogs of this breed to break down by map")
+
+        // }
+      }
+
+      button.on("change", function (d) {
+        var selectedBreed = d3.select(this).property("value")
+
+        update_breed(selectedBreed);
+      })
+
+
+
+    }
+
+    visualize();
+
+
+
+
+  </script>
+</body>
+
+</html>
