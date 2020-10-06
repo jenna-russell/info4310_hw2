@@ -11,16 +11,15 @@
 
 <body>
   <h1> Dog Breeds in NYC</h1>
-  <h2 class="center"> Use the map below to see how many dogs reside within each zip code of NYC</h2>
+  <h2 class="center"> Use the map below to see how many dogs reside within each Zip Code of NYC</h2>
   <div class="center" class="breed_select">
     Select a breed: <select id="button"></select>
     <div class="selected_breed"></div>
   </div>
 
-  <div class="center">
+  <div>
     <svg id="map" width="700" height="700"></svg>
   </div>
-  <div> <svg id="bar_chart" width="500" height="500"> </svg></div>
 
   <script>
     const svg = d3.select("#map")
@@ -103,11 +102,15 @@
 
       tooltip.append("rect")
         .attr("fill", "black").attr("opacity", 1)
-        .attr("width", 60).attr("height", 30)
+        .attr("width", 120).attr("height", 40)
 
       let tooltip_txt = tooltip.append("text")
         .attr("text-anchor", "middle").attr("alignment-baseline", "hanging")
-        .attr("x", 30).attr("y", 8).attr("fill", "white")
+        .attr("x", 60).attr("y", 2).attr("fill", "white")
+
+      let tooltip_other_txt = tooltip.append("text")
+        .attr("text-anchor", "middle").attr("alignment-baseline", "hanging")
+        .attr("x", 60).attr("y", 22).attr("fill", "white")
 
       d3.selectAll(".zip").on("mouseenter", mouse_enter);
       d3.selectAll(".zip").on("mouseout", mouse_leave);
@@ -116,10 +119,10 @@
         tooltip.style("visibility", "visible")
         let zipcode = d3.select(this)
         zipcode.attr("stroke", "black").attr("stroke-width", 3)
-
-        tooltip_txt.text(zipCounts[zipcode.datum().properties.postalcode])
+        tooltip_txt.text("Zip Code: " + zipcode.datum().properties.postalcode)
+        tooltip_other_txt.text("Dog Count: " + zipCounts[zipcode.datum().properties.postalcode])
         let bounds = path.bounds(zipcode.datum())
-        let xPos = (bounds[0][0] + bounds[1][0]) / 2.0 - 60 / 2.0;
+        let xPos = (bounds[0][0] + bounds[1][0]) / 2.0 - 120 / 2.0;
         let yPos = bounds[1][1];
         tooltip.attr("transform", "translate(" + xPos + "," + yPos + ")");
 
@@ -158,55 +161,6 @@
         if (dog["Borough"] == "Staten Island") return (true)
         else return false
       }
-
-      function make_bar_chart(data) {
-        let man_dogs = data.filter(man)
-        let brook_dogs = data.filter(brook)
-        let bronx_dogs = data.filter(bronx)
-        let queens_dogs = data.filter(queens)
-        let si_dogs = data.filter(si)
-
-        let borough_dict = {}
-        borough_dict["Bronx"] = bronx_dogs.length
-        borough_dict["Brooklyn"] = brook_dogs.length
-        borough_dict["Manhattan"] = man_dogs.length
-        borough_dict["Queens"] = queens_dogs.length
-        borough_dict["Staten Island"] = si_dogs.length
-
-        console.log(borough_dict)
-
-        const bar_svg = d3.selectAll("#bar_chart");
-        const bar_width = bar_svg.attr("width");
-        const bar_height = bar_svg.attr("height");
-
-        const margin = { top: 20, right: 20, bottom: 20, left: 20 };
-        const bars_width = bar_width - margin.right - margin.left;
-        const bars_height = bar_height - margin.top - margin.bottom;
-
-        let annotations = bar_svg.append("g").attr("id", "gridlines");
-        let barchart = bar_svg.append("g").attr("id", "graphs")
-
-        const numDogsExtent = d3.extent(Object.keys(borough_dict), d => borough_dict[d]);
-        const dogScale = d3.scaleLinear().domain([0, 105035]).range([bars_height, 0])
-
-        console.log(Object.keys(borough_dict))
-        console.log(dogScale);
-
-        let x = 0;
-        Object.keys(borough_dict).forEach(function (key) {
-          console.log(dogScale(borough_dict[key]));
-          barchart.append("line")
-            .attr("x1", x + 20)
-            .attr("x2", x + 20)
-            .attr("y1", bars_height)
-            .attr("y2", dogScale(borough_dict[key]))
-            .style("stroke", "#5555F0")
-            .style("stroke-width", 10);
-          x = x + 20;
-        });
-
-      }
-      make_bar_chart(pet_data);
 
       function update_breed(breed) {
 
@@ -248,9 +202,10 @@
             console.log(zipcode.datum().properties.postalcode)
             zipcode.attr("stroke", "black").attr("stroke-width", 3)
 
-            tooltip_txt.text(zipCounts2[zipcode.datum().properties.postalcode])
+            tooltip_txt.text("Zip Code: " + zipcode.datum().properties.postalcode)
+            tooltip_other_txt.text("Dog Count: " + zipCounts[zipcode.datum().properties.postalcode])
             let bounds = path.bounds(zipcode.datum())
-            let xPos = (bounds[0][0] + bounds[1][0]) / 2.0 - 60 / 2.0;
+            let xPos = (bounds[0][0] + bounds[1][0]) / 2.0 - 120 / 2.0;
             let yPos = bounds[1][1];
             tooltip.attr("transform", "translate(" + xPos + "," + yPos + ")");
           }

@@ -1,21 +1,40 @@
+@font-face {
+  font-family:myFont;
+  src: url(Playfair_Display/static/PlayfairDisplay-Regular.ttf)
+}
+
+@font-face {
+  font-family:myFont_bold;
+  src: url(Playfair_Display/static/PlayfairDisplay-Bold.ttf)
+}
+
+@font-face {
+  font-family:myFont_medium;
+  src: url(Playfair_Display/static/PlayfairDisplay-Medium.ttf)
+}
+
 body {
-  font-family: myFont;
+  font-family: myFont, Georgia, 'Times New Roman', Times, serif;
 }
 
 h1{
   color: #49006a;
   margin-bottom: 30px;
+  margin-top: 30px;
   text-align: center;
+  font-family: myFont_bold;
 }
 
 h2 {
   padding-bottom: 20px;
+  font-family: myFont_medium;
+  font-size: 1.3em;
 }
 
 .center {
   text-align: center;
   margin: auto;
-  width: 40%;
+  width: 60%;
 }
 
 #button {
@@ -28,10 +47,8 @@ h2 {
   fill: none;
 }
 
-.flex-container {
-  display: flex;
-}
-
-.flex-child {
-  flex: 2;
+#map {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
