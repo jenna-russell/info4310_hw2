@@ -203,7 +203,7 @@
             zipcode.attr("stroke", "black").attr("stroke-width", 3)
 
             tooltip_txt.text("Zip Code: " + zipcode.datum().properties.postalcode)
-            tooltip_other_txt.text("Dog Count: " + zipCounts[zipcode.datum().properties.postalcode])
+            tooltip_other_txt.text("Dog Count: " + zipCounts2[zipcode.datum().properties.postalcode])
             let bounds = path.bounds(zipcode.datum())
             let xPos = (bounds[0][0] + bounds[1][0]) / 2.0 - 120 / 2.0;
             let yPos = bounds[1][1];
